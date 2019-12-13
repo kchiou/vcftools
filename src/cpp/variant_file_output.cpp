@@ -3521,7 +3521,7 @@ void variant_file::output_weir_and_cockerham_fst(const parameters &params)
 		buf = cout.rdbuf();
 
 	ostream out(buf);
-	out << "CHROM\tPOS\tWEIR_AND_COCKERHAM_FST" << endl;
+	out << "CHROM\tPOS\tPI_BETWEEN\tPI_WITHIN\tWEIR_AND_COCKERHAM_FST" << endl;
 
 	entry *e = get_entry_object();
 	vector<char> variant_line;
@@ -3618,6 +3618,8 @@ void variant_file::output_weir_and_cockerham_fst(const parameters &params)
 			}
 		}
 		double fst = sum_a/sum_all;
+		double pi_within = sum_all - sum_a;
+		double pi_between = sum_all;
 		if (!std::isnan(fst))
 		{
 			sum1 += sum_a;
@@ -3625,7 +3627,7 @@ void variant_file::output_weir_and_cockerham_fst(const parameters &params)
 			sum3 += fst;
 			count++;
 		}
-		out << e->get_CHROM() << "\t" << e->get_POS() << "\t" << fst << endl;
+		out << e->get_CHROM() << "\t" << e->get_POS() << "\t" << pi_between "\t" << pi_within "\t" << fst << endl;
 	}
 
 	double weighted_Fst = sum1 / sum2;
@@ -3845,7 +3847,7 @@ void variant_file::output_windowed_weir_and_cockerham_fst(const parameters &para
 		buf = cout.rdbuf();
 
 	ostream out(buf);
-	out << "CHROM\tBIN_START\tBIN_END\tN_VARIANTS\tWEIGHTED_FST\tMEAN_FST" << endl;
+	out << "CHROM\tBIN_START\tBIN_END\tN_VARIANTS\tPI_BETWEEN\tPI_WITHIN\tWEIGHTED_FST\tMEAN_FST" << endl;
 	for (unsigned int ui=0; ui<chrs.size(); ui++)
 	{
 		CHROM = chrs[ui];
@@ -3856,11 +3858,18 @@ void variant_file::output_windowed_weir_and_cockerham_fst(const parameters &para
 				double weighted_Fst = bins[CHROM][s][0] / bins[CHROM][s][1];
 				double mean_Fst = bins[CHROM][s][2] / bins[CHROM][s][3];
 
+				double pi_between = bins[CHROM][s][1];
+				double pi_within = bins[CHROM][s][1] - bins[CHROM][s][0];
+
 				out << CHROM << "\t"
 				<< s*fst_window_step + 1 << "\t"
 				<< (s*fst_window_step + fst_window_size) << "\t"
 				<< bins[CHROM][s][3] << "\t"
-				<< weighted_Fst << "\t" << mean_Fst << endl;
+				<< pi_between << "\t"
+				<< pi_within << "\t"
+				<< weighted_Fst << "\t"
+				<< mean_Fst
+				<< endl;
 			}
 		}
 	}
